@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: feedback-bot
+    env: python
+    pythonVersion: "3.12"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      DISCORD_TOKEN:
+        fromSecret: DISCORD_TOKEN
+      FEEDBACK_CHANNEL_ID:
+        fromSecret: FEEDBACK_CHANNEL_ID
