@@ -4,7 +4,10 @@ from discord import app_commands
 from discord.ext import commands
 import os
 from datetime import datetime, timedelta
+import threading
+import time
 
+# ---------- BOT SETUP ----------
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -57,4 +60,22 @@ async def timeout(interaction: discord.Interaction, user: discord.Member, minute
     await user.timeout(discord.utils.utcnow() + timedelta(minutes=minutes))
     await interaction.response.send_message(f"{user} timed out for {minutes}m")
 
+# ---------- HTTP SERVER FOR RENDER (KEEPS IT ALIVE) ----------
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running! 🚀"
+
+def run_http_server():
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
+
+# Start HTTP server in a separate thread (so bot runs too)
+http_thread = threading.Thread(target=run_http_server, daemon=True)
+http_thread.start()
+
+# ---------- RUN BOT ----------
 bot.run(os.getenv("DISCORD_TOKEN"))
