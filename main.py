@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 import threading
 import time
-import asyncio  # ← THIS WAS MISSING!
+import asyncio
 
 # ---------- CONFIG ----------
 intents = discord.Intents.default()
@@ -110,71 +110,4 @@ time.sleep(1)
 
 # Start bot
 print("Starting Discord bot...")
-bot.run(os.getenv("DISCORD_TOKEN"))@app_commands.describe(user="Member to timeout", minutes="Minutes (1–40320)")
-@app_commands.default_permissions(administrator=True)
-async def timeout(interaction: discord.Interaction, user: discord.Member, minutes: int):
-    if not on_cooldown(interaction.user.id):
-        await interaction.response.send_message("Please wait 1 minute!", ephemeral=True)
-        return
-
-    if minutes < 1 or minutes > 40320:
-        await interaction.response.send_message("Minutes must be 1–40320.", ephemeral=True)
-        return
-
-    try:
-        await user.timeout(discord.utils.utcnow() + timedelta(minutes=minutes),
-                          reason=f"Timed out by {interaction.user}")
-        await interaction.response.send_message(f"{user.mention} has been timed out for **{minutes}** minute(s).")
-    except discord.Forbidden:
-        await interaction.response.send_message("I don't have permission to timeout this user!", ephemeral=True)
-
-# ---------- FLASK HTTP SERVER (KEEPS RENDER ALIVE & FAST) ----------
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running! Use /feedback in Discord!"
-
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, use_reloader=False)
-
-# Start Flask in background thread
-flask_thread = threading.Thread(target=run_flask, daemon=True)
-flask_thread.start()
-
-# Wait 1 sec for Flask to start
-time.sleep(1)
-
-# Start bot
-print("Starting Discord bot...")
-bot.run(os.getenv("DISCORD_TOKEN"))        return
-
-    try:
-        await user.timeout(discord.utils.utcnow() + timedelta(minutes=minutes),
-                          reason=f"Timed out by {interaction.user}")
-        await interaction.response.send_message(f"{user.mention} has been timed out for **{minutes}** minute(s).")
-    except discord.Forbidden:
-        await interaction.response.send_message("I don't have permission!", ephemeral=True)
-
-# ---------- HTTP SERVER (KEEPS RENDER HAPPY) ----------
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running! Use /feedback and /timeout in Discord!"
-
-def run_http_server():
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port, use_reloader=False)
-
-# Start HTTP server in background
-http_thread = threading.Thread(target=run_http_server, daemon=True)
-http_thread.start()
-
-# ---------- RUN BOT ----------
 bot.run(os.getenv("DISCORD_TOKEN"))
